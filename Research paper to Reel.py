@@ -7,6 +7,10 @@ import subprocess
 import time
 import asyncio
 from pathlib import Path
+import fitz                          
+import google.generativeai as genai
+import torch
+import transformers
 
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
@@ -46,13 +50,9 @@ print(f"   Project dir      : {BASE_DIR}")
 
 
 
-import fitz                          
-import google.generativeai as genai
-import torch
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 torch.set_float32_matmul_precision("high")
-import transformers
 transformers.logging.set_verbosity_error()
 from diffusers import LTX2Pipeline
 from diffusers.pipelines.ltx2.export_utils import encode_video
@@ -166,7 +166,7 @@ def trim(text: str, max_chars: int = 2500) -> str:
     return text[:max_chars] + "..." if len(text) > max_chars else text
 
 
-print("\n🔍 Extracting text from PDF...")
+print("\nExtracting text from PDF...")
 doc        = fitz.open(PDF_PATH)
 pages_text = [doc[i].get_text("text") for i in range(doc.page_count)]
 full_text  = "\n".join(pages_text)
@@ -770,11 +770,8 @@ print(f"   Duration  : {final_duration:.1f}s")
 print(f"   File size : {file_mb:.1f} MB")
 print(f"   Resolution: {VIDEO_WIDTH}×{VIDEO_HEIGHT} @ {int(FRAME_RATE)}fps")
 
-
-
-print("\n" + "═" * 60)
 print("GENERATED ASSETS")
-print("═" * 60)
+
 
 groups = [
     ("Extracted JSON",  FOLDERS["extracted"],  "*.json"),
@@ -793,5 +790,4 @@ for label, folder, pattern in groups:
         val  = size // 1024 if size < 1_000_000 else size // (1024**2)
         print(f"    {fp.name:40s} {val:6d} {unit}")
 
-print("\n" + "═" * 60)
 print(f"\nDone! Open your video at:\n   {final_output_path}\n")
